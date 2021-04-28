@@ -4,6 +4,7 @@ import re
 import sqlite3
 from sys import argv
 
+# Connect to DB
 conn = sqlite3.connect("data.db")
 cursor = conn.cursor()
 
@@ -12,10 +13,11 @@ if len(argv) > 1 and argv[1] == 'create':
     cursor.execute('''CREATE TABLE offers (price REAL, rooms REAL, area TEXT, district TEXT, rent REAL, floor REAL, bail REAL)''')
     quit()
 
-# Iterafe through number of pages
-for page in (1,115):
+i = 1
+# Iterate through number of pages
+while i < 115:
 
-    url = 'https://www.otodom.pl/wynajem/mieszkanie/wroclaw/?search%5Bregion_id%5D=1&search%5Bsubregion_id%5D=381&search%5Bcity_id%5D=39&page=' + str(page)
+    url = 'https://www.otodom.pl/wynajem/mieszkanie/wroclaw/?search%5Bregion_id%5D=1&search%5Bsubregion_id%5D=381&search%5Bcity_id%5D=39&page=' + str(i)
 
     page = get(url)
     bs = BeautifulSoup(page.content, 'html.parser')
@@ -40,13 +42,14 @@ for page in (1,115):
         except:
             pass
 
-        print(price, rooms, area, district)
-        # try:
-        #     print("Kaucja: " + bail + " Piętro: " + floor + " Czynsz: " + rent)
-        # except:
-        #     pass
-
+        #print(price, rooms, area, district)
+        
+        # Add values to DB in every iteration
         cursor.execute('INSERT INTO offers VALUES (?,?,?,?,?,?,?)', (price, rooms, area, district, rent, floor, bail))
         conn.commit()
 
+    # Increment page number
+    i = i + 1
+    print(i)
+    
 conn.close()
